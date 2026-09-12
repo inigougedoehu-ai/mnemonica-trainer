@@ -41,3 +41,15 @@ test("keeps backend credentials on the device", async () => {
   assert.match(client, /has_session/);
   assert.doesNotMatch(client, /d4ee9e4bdc127d739d144233f4ede2f6c305371676a54278dbc015f1bef95bcd/);
 });
+
+test("supports persistent light, dark, and system themes", async () => {
+  const source = await readFile(new URL("../app/trainer-app.tsx", import.meta.url), "utf8");
+  const styles = await readFile(new URL("../app/globals.css", import.meta.url), "utf8");
+  const layout = await readFile(new URL("../app/layout.tsx", import.meta.url), "utf8");
+  assert.match(source, /mnemonica\.theme\.v1/);
+  assert.match(source, /Automático/);
+  assert.match(source, /Claro/);
+  assert.match(source, /Oscuro/);
+  assert.match(styles, /html\[data-theme="dark"\]/);
+  assert.match(layout, /prefers-color-scheme: dark/);
+});

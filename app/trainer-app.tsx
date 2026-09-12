@@ -20,12 +20,16 @@ import {
   Layers3,
   ListOrdered,
   MoveHorizontal,
+  Moon,
+  Palette,
   Play,
   RotateCcw,
   RefreshCcw,
   Settings2,
   Shuffle,
   Sparkles,
+  Smartphone,
+  Sun,
   Target,
 } from "lucide-react";
 
@@ -60,6 +64,7 @@ type Mode =
   | "sequence";
 type AnswerStyle = "choices" | "direct";
 type SessionLength = 10 | 20 | 52 | "continuous";
+type ThemePreference = "system" | "light" | "dark";
 type View = "home" | "practice" | "deck" | "progress" | "learn" | "settings";
 
 type PlayingCard = {
@@ -155,6 +160,7 @@ type SessionPayload = {
 const PENDING_SESSIONS_KEY = "mnemonica.pendingSessions.v1";
 const LOCAL_PROGRESS_KEY = "mnemonica.progress.v2";
 const PREFERENCES_KEY = "mnemonica.preferences.v2";
+const THEME_PREFERENCE_KEY = "mnemonica.theme.v1";
 const PUBLIC_BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH || "";
 const SESSION_LENGTHS: SessionLength[] = [10, 20, 52, "continuous"];
 const MODE_KEYS: Array<Exclude<Mode, "mixed">> = [
@@ -631,6 +637,8 @@ export function TrainerApp() {
   const [pendingCount, setPendingCount] = useState(0);
   const [isOnline, setIsOnline] = useState(true);
   const [preferencesReady, setPreferencesReady] = useState(false);
+  const [themePreference, setThemePreference] = useState<ThemePreference>("system");
+  const [themeReady, setThemeReady] = useState(false);
   const [installPrompt, setInstallPrompt] = useState<InstallPromptEvent | null>(null);
   const [learnPosition, setLearnPosition] = useState(1);
   const [learnRevealed, setLearnRevealed] = useState(true);
@@ -661,6 +669,12 @@ export function TrainerApp() {
   }, [answerTimes]);
 
   useEffect(() => {
+    const storedTheme = window.localStorage.getItem(THEME_PREFERENCE_KEY);
+    if (storedTheme === "system" || storedTheme === "light" || storedTheme === "dark") {
+      setThemePreference(storedTheme);
+    }
+    setThemeReady(true);
+
     const storedPreferences = window.localStorage.getItem(PREFERENCES_KEY);
     let hasStoredPreferences = false;
     if (storedPreferences) {
@@ -729,6 +743,27 @@ export function TrainerApp() {
       window.removeEventListener("beforeinstallprompt", handleInstall);
     };
   }, []);
+
+  useEffect(() => {
+    if (!themeReady) return;
+    const media = window.matchMedia("(prefers-color-scheme: dark)");
+    const applyTheme = () => {
+      const resolvedTheme = themePreference === "system"
+        ? (media.matches ? "dark" : "light")
+        : themePreference;
+      document.documentElement.dataset.theme = resolvedTheme;
+      document.documentElement.style.colorScheme = resolvedTheme;
+      document.querySelector('meta[name="theme-color"]')?.setAttribute(
+        "content",
+        resolvedTheme === "dark" ? "#07131b" : "#f7f9f9",
+      );
+    };
+
+    window.localStorage.setItem(THEME_PREFERENCE_KEY, themePreference);
+    applyTheme();
+    media.addEventListener("change", applyTheme);
+    return () => media.removeEventListener("change", applyTheme);
+  }, [themePreference, themeReady]);
 
   useEffect(() => {
     if (!preferencesReady) return;
@@ -1547,6 +1582,30 @@ export function TrainerApp() {
               <p className="eyebrow">Ajustes</p>
               <h2>Tu aplicación</h2>
               <p>Las preferencias y las sesiones pendientes se conservan en este dispositivo.</p>
+            </section>
+
+            <section className="settings-card appearance-card">
+              <div className="setting-title"><span><Palette /></span><h3>Apariencia</h3></div>
+              <p>Elige el aspecto de la aplicación.</p>
+              <div className="theme-options" role="radiogroup" aria-label="Apariencia de la aplicación">
+                {([
+                  { value: "system", label: "Automático", icon: <Smartphone /> },
+                  { value: "light", label: "Claro", icon: <Sun /> },
+                  { value: "dark", label: "Oscuro", icon: <Moon /> },
+                ] as const).map((option) => (
+                  <button
+                    type="button"
+                    role="radio"
+                    aria-checked={themePreference === option.value}
+                    className={themePreference === option.value ? "selected" : ""}
+                    key={option.value}
+                    onClick={() => setThemePreference(option.value)}
+                  >
+                    {option.icon}
+                    <span>{option.label}</span>
+                  </button>
+                ))}
+              </div>
             </section>
 
             <section className="settings-card install-card">

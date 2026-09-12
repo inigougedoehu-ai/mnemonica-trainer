@@ -591,6 +591,45 @@ button {
   background: #fff;
 }
 
+.appearance-card > p {
+  margin: -0.2rem 0 0.8rem;
+  color: #738189;
+  font-size: 0.82rem;
+}
+
+.theme-options {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.45rem;
+}
+
+.theme-options button {
+  display: grid;
+  min-width: 0;
+  min-height: 4.2rem;
+  place-content: center;
+  justify-items: center;
+  gap: 0.35rem;
+  padding: 0.55rem 0.25rem;
+  border: 1px solid #dce3e5;
+  border-radius: 0.9rem;
+  background: #f6f8f8;
+  color: #65747c;
+  font-size: 0.7rem;
+  font-weight: 800;
+}
+
+.theme-options button svg {
+  width: 1.15rem;
+}
+
+.theme-options button.selected {
+  border-color: #dc6a62;
+  background: #fff4f2;
+  color: #bd3931;
+  box-shadow: inset 0 0 0 1px rgb(216 70 60 / 8%);
+}
+
 .setting-title {
   display: flex;
   align-items: center;
@@ -1690,6 +1729,7 @@ button {
 
 .install-card .setting-title > span,
 .storage-card .setting-title > span,
+.appearance-card .setting-title > span,
 .backend-card .setting-title > span {
   background: #e7edef;
   color: #294f5b;
@@ -1697,6 +1737,7 @@ button {
 
 .install-card .setting-title svg,
 .storage-card .setting-title svg,
+.appearance-card .setting-title svg,
 .backend-card .setting-title svg {
   width: 1rem;
 }
@@ -1873,3 +1914,241 @@ button {
     margin-bottom: 0.8rem;
   }
 }
+
+/* El tema se resuelve al arrancar para que "Automático" siga al dispositivo. */
+html[data-theme="dark"] {
+  --background: #08131a;
+  --foreground: #e7eef1;
+  --card: #12222c;
+  --card-foreground: #e7eef1;
+  --popover: #162832;
+  --popover-foreground: #e7eef1;
+  --secondary: #1b2c35;
+  --secondary-foreground: #e7eef1;
+  --muted: #17262f;
+  --muted-foreground: #9babb3;
+  --accent: #21343e;
+  --accent-foreground: #f2f6f7;
+  --border: #293c46;
+  --input: #314650;
+  background: #050d12;
+}
+
+html[data-theme="dark"] body {
+  background: #08131a;
+  color: #e7eef1;
+}
+
+html[data-theme="dark"] .app-screen,
+html[data-theme="dark"] .trainer-screen,
+html[data-theme="dark"] .summary-screen {
+  background:
+    radial-gradient(circle at 20% 0%, rgb(63 112 126 / 15%), transparent 34%),
+    #08131a;
+}
+
+html[data-theme="dark"] .app-shell,
+html[data-theme="dark"] .trainer-shell,
+html[data-theme="dark"] .topbar {
+  background: #0c1820;
+}
+
+html[data-theme="dark"] .section-heading h2,
+html[data-theme="dark"] .page-intro h2,
+html[data-theme="dark"] .question-stage h1,
+html[data-theme="dark"] .learn-stage h1 {
+  color: #eef4f6;
+}
+
+html[data-theme="dark"] .eyebrow,
+html[data-theme="dark"] .page-intro > p:last-child,
+html[data-theme="dark"] .subtle-copy,
+html[data-theme="dark"] .deck-footnote,
+html[data-theme="dark"] .summary-copy,
+html[data-theme="dark"] .feedback,
+html[data-theme="dark"] .legend,
+html[data-theme="dark"] .question-count,
+html[data-theme="dark"] .trainer-header__progress > span,
+html[data-theme="dark"] .learn-position,
+html[data-theme="dark"] .duration-copy,
+html[data-theme="dark"] .range-summary,
+html[data-theme="dark"] .unknown-answer {
+  color: #94a5ad;
+}
+
+html[data-theme="dark"] .avatar-button,
+html[data-theme="dark"] .quick-modes button,
+html[data-theme="dark"] .learning-shortcuts > button,
+html[data-theme="dark"] .settings-card,
+html[data-theme="dark"] .deck-map,
+html[data-theme="dark"] .mode-progress,
+html[data-theme="dark"] .icon-button,
+html[data-theme="dark"] .number-option,
+html[data-theme="dark"] .direct-answer > input,
+html[data-theme="dark"] .direct-select,
+html[data-theme="dark"] .reveal-action,
+html[data-theme="dark"] .summary-card,
+html[data-theme="dark"] .storage-status button {
+  border-color: #293c46;
+  background: #12222c;
+  color: #e7eef1;
+  box-shadow: 0 0.35rem 1.2rem rgb(0 0 0 / 14%);
+}
+
+html[data-theme="dark"] .stack-strip span,
+html[data-theme="dark"] .mode-list button,
+html[data-theme="dark"] .answer-style-options > label,
+html[data-theme="dark"] .duration-options button,
+html[data-theme="dark"] .mode-progress__list article,
+html[data-theme="dark"] .range-select,
+html[data-theme="dark"] .install-help,
+html[data-theme="dark"] .session-sync,
+html[data-theme="dark"] .backend-field input,
+html[data-theme="dark"] .theme-options button {
+  border-color: #263943;
+  background: #101f28;
+  color: #d9e4e8;
+}
+
+html[data-theme="dark"] .quick-modes small,
+html[data-theme="dark"] .learning-shortcuts small,
+html[data-theme="dark"] .mode-list small,
+html[data-theme="dark"] .answer-style-options small,
+html[data-theme="dark"] .thinking-setting small,
+html[data-theme="dark"] .mode-progress__list small,
+html[data-theme="dark"] .install-card > p,
+html[data-theme="dark"] .install-help span,
+html[data-theme="dark"] .storage-status small,
+html[data-theme="dark"] .backend-card > p,
+html[data-theme="dark"] .appearance-card > p,
+html[data-theme="dark"] .choice-reveal__cover span,
+html[data-theme="dark"] .session-sync small {
+  color: #8fa1aa;
+}
+
+html[data-theme="dark"] .mode-list strong,
+html[data-theme="dark"] .answer-style-options strong,
+html[data-theme="dark"] .thinking-setting,
+html[data-theme="dark"] .storage-status strong,
+html[data-theme="dark"] .backend-field,
+html[data-theme="dark"] .mode-progress__list strong,
+html[data-theme="dark"] .session-sync strong,
+html[data-theme="dark"] .summary-stats strong {
+  color: #dce7ea;
+}
+
+html[data-theme="dark"] .mode-list button.selected,
+html[data-theme="dark"] .answer-style-options > label.selected,
+html[data-theme="dark"] .duration-options button.selected,
+html[data-theme="dark"] .theme-options button.selected {
+  border-color: #a94f49;
+  background: #351f20;
+  color: #ff9b92;
+}
+
+html[data-theme="dark"] .bottom-nav {
+  border-top-color: rgb(43 63 73 / 90%);
+  background: rgb(12 24 32 / 94%);
+  box-shadow: 0 -0.65rem 2rem rgb(0 0 0 / 22%);
+}
+
+html[data-theme="dark"] .bottom-nav button {
+  color: #778992;
+}
+
+html[data-theme="dark"] .bottom-nav button.active {
+  color: #ef675e;
+}
+
+html[data-theme="dark"] .learning-shortcuts > button.guided-learning {
+  border-color: #6f5d38;
+  background: linear-gradient(135deg, #262318, #12222c);
+}
+
+html[data-theme="dark"] .guided-learning .mode-icon {
+  background: #3a3320;
+  color: #e0bc6d;
+}
+
+html[data-theme="dark"] .mode-icon,
+html[data-theme="dark"] .install-card .setting-title > span,
+html[data-theme="dark"] .storage-card .setting-title > span,
+html[data-theme="dark"] .appearance-card .setting-title > span,
+html[data-theme="dark"] .backend-card .setting-title > span {
+  background: #20333d;
+  color: #a9c6cf;
+}
+
+html[data-theme="dark"] .range-picker__line,
+html[data-theme="dark"] .step-dots i,
+html[data-theme="dark"] .trainer-header__progress [data-slot="progress"] {
+  background: #31434c;
+}
+
+html[data-theme="dark"] .range-summary,
+html[data-theme="dark"] .thinking-setting,
+html[data-theme="dark"] .summary-stats {
+  border-color: #293c46;
+}
+
+html[data-theme="dark"] .full-deck {
+  border-color: #293c46;
+  background:
+    radial-gradient(circle at 50% 0%, rgb(72 125 139 / 10%), transparent 24%),
+    #09151c;
+}
+
+html[data-theme="dark"] .deck-position {
+  border-color: #09151c;
+  background: #254453;
+}
+
+html[data-theme="dark"] .position-orb {
+  border-color: #354a54;
+  background:
+    radial-gradient(circle at 32% 28%, #263943, transparent 32%),
+    linear-gradient(145deg, #1b2c35, #11212a);
+  color: #eff5f6;
+  box-shadow: 0 1rem 2.4rem rgb(0 0 0 / 25%);
+}
+
+html[data-theme="dark"] .position-orb span {
+  color: #8fa1aa;
+}
+
+html[data-theme="dark"] .choice-reveal__cover {
+  border-color: rgb(76 101 112 / 80%);
+  background: rgb(13 28 37 / 82%);
+  color: #e7eef1;
+}
+
+html[data-theme="dark"] .answer-correct {
+  border-color: #3d9c78 !important;
+  background: #123629 !important;
+}
+
+html[data-theme="dark"] .answer-wrong {
+  border-color: #c95b53 !important;
+  background: #3a2020 !important;
+}
+
+html[data-theme="dark"] .summary-icon {
+  background: #39201f;
+}
+
+html[data-theme="dark"] .session-sync--saved {
+  border-color: #315f50;
+  background: #112d25;
+  color: #65c79e;
+}
+
+html[data-theme="dark"] .session-sync--pending {
+  border-color: #6a3e3a;
+  background: #351f20;
+  color: #ef8178;
+}
+
+html[data-theme="dark"] .strong { background: #285648; color: #b8ead9; }
+html[data-theme="dark"] .learning { background: #5b4c23; color: #f3dc91; }
+html[data-theme="dark"] .weak { background: #60332f; color: #f4b0a9; }
+html[data-theme="dark"] .unseen { background: #263740; color: #9aabb3; }

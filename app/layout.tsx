@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
 const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "";
+const themeBootScript = `(()=>{try{const key="mnemonica.theme.v1";const saved=localStorage.getItem(key);const preference=saved==="light"||saved==="dark"||saved==="system"?saved:"system";const theme=preference==="system"?(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"):preference;document.documentElement.dataset.theme=theme;document.documentElement.style.colorScheme=theme}catch{}})()`;
 
 export const metadata: Metadata = {
   title: "Mnemónica · Entrenador de stack",
@@ -33,7 +34,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="es">
+    <html lang="es" suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeBootScript }} />
+      </head>
       <body>{children}</body>
     </html>
   );
