@@ -99,7 +99,16 @@ type CardProgress = {
   average_time_ms: number;
   last_answered_at?: string;
   review_priority?: number;
+  recent_accuracy?: number;
+  recent_average_time_ms?: number;
+  recent_attempts?: RecentAttempt[];
   status: "strong" | "learning" | "weak" | "unseen";
+};
+
+type RecentAttempt = {
+  correct: boolean;
+  response_time_ms: number;
+  answered_at?: string;
 };
 
 type ModeProgress = {
@@ -274,27 +283,45 @@ function emptyProgress(start = 1, end = 10): ProgressSnapshot {
       average_time_ms: 0,
       status: "unseen" as const,
       review_priority: 1000,
+      recent_accuracy: 0,
+      recent_average_time_ms: 0,
+      recent_attempts: [],
     })),
     modes: MODE_KEYS.map((mode) => ({ mode, total: 0, accuracy: 0, average_time_ms: 0 })),
   };
 }
 
-function statusFor(total: number, accuracy: number, averageTime: number): CardProgress["status"] {
+function statusFor(total: number, attempts: RecentAttempt[]): CardProgress["status"] {
   if (!total) return "unseen";
-  if (accuracy >= 90 && total >= 5 && averageTime <= 3000) return "strong";
+  const recent = attempts.slice(-10);
+  const correct = recent.filter((attempt) => attempt.correct).length;
+  const accuracy = recent.length ? (correct / recent.length) * 100 : 0;
+  const averageTime = recent.length
+    ? recent.reduce((sum, attempt) => sum + attempt.response_time_ms, 0) / recent.length
+    : 0;
+  const lastThreeCorrect = recent.length >= 3 && recent.slice(-3).every((attempt) => attempt.correct);
+  if (recent.length === 10 && correct >= 9 && lastThreeCorrect && averageTime <= 3000) return "strong";
   return accuracy >= 70 ? "learning" : "weak";
 }
 
 function reviewPriority(card: CardProgress) {
   if (!card.total) return 1000;
+  const recent = card.recent_attempts ?? [];
+  const recentAccuracy = recent.length
+    ? recent.filter((attempt) => attempt.correct).length / recent.length
+    : 0;
+  const recentAverage = recent.length
+    ? recent.reduce((sum, attempt) => sum + attempt.response_time_ms, 0) / recent.length
+    : 0;
   const ageDays = card.last_answered_at
     ? Math.max(0, (Date.now() - new Date(card.last_answered_at).getTime()) / 86_400_000)
     : 30;
   return Math.round(
-    (100 - card.accuracy) * 7
-    + Math.min(card.average_time_ms / 20, 220)
+    (1 - recentAccuracy) * 700
+    + Math.min(recentAverage / 20, 220)
     + Math.min(ageDays, 30) * 5
-    + Math.max(0, 5 - card.total) * 45,
+    + Math.max(0, 10 - recent.length) * 25
+    + (recent.length && !recent.at(-1)?.correct ? 180 : 0),
   );
 }
 
@@ -313,7 +340,17 @@ function applySessionLocally(current: ProgressSnapshot | null, payload: SessionP
     card.accuracy = Math.round(((previousCorrect + (answer.correct ? 1 : 0)) / card.total) * 100);
     card.average_time_ms = Math.round((previousTime + answer.response_time_ms) / card.total);
     card.last_answered_at = answer.answered_at;
-    card.status = statusFor(card.total, card.accuracy, card.average_time_ms);
+    const recentAttempts = [
+      ...(card.recent_attempts ?? []),
+      { correct: answer.correct, response_time_ms: answer.response_time_ms, answered_at: answer.answered_at },
+    ].slice(-10);
+    const recentCorrect = recentAttempts.filter((attempt) => attempt.correct).length;
+    card.recent_attempts = recentAttempts;
+    card.recent_accuracy = Math.round((recentCorrect / recentAttempts.length) * 100);
+    card.recent_average_time_ms = Math.round(
+      recentAttempts.reduce((sum, attempt) => sum + attempt.response_time_ms, 0) / recentAttempts.length,
+    );
+    card.status = statusFor(card.total, recentAttempts);
     card.review_priority = reviewPriority(card);
   }
 
@@ -330,9 +367,15 @@ function applySessionLocally(current: ProgressSnapshot | null, payload: SessionP
 
   const totalAnswers = oldTotal + payload.answers.length;
   const mastery = base.cards.reduce((sum, card) => {
-    const confidence = Math.min(card.total / 5, 1);
-    const speed = card.average_time_ms ? Math.max(0.35, Math.min(1, 3000 / card.average_time_ms)) : 0;
-    return sum + (card.accuracy / 100) * confidence * speed;
+    const recent = card.recent_attempts ?? [];
+    const recentCorrect = recent.filter((attempt) => attempt.correct).length;
+    const recentAccuracy = recent.length ? recentCorrect / recent.length : 0;
+    const recentAverage = recent.length
+      ? recent.reduce((sum, attempt) => sum + attempt.response_time_ms, 0) / recent.length
+      : 0;
+    const confidence = Math.min(recent.length / 10, 1);
+    const speed = recentAverage ? Math.max(0.35, Math.min(1, 3000 / recentAverage)) : 0;
+    return sum + recentAccuracy * confidence * speed;
   }, 0);
 
   return {
@@ -1364,6 +1407,9 @@ export function TrainerApp() {
     total: 0,
     accuracy: 0,
     average_time_ms: 0,
+    recent_accuracy: 0,
+    recent_average_time_ms: 0,
+    recent_attempts: [],
     status: "unseen" as const,
   }));
   const strongCards = progressCards.filter((card) => card.status === "strong").length;
@@ -1525,7 +1571,7 @@ export function TrainerApp() {
             <section className="progress-overview">
               <div className="progress-ring"><strong>{progress?.mastery_percent ?? 0}%</strong><span>dominio</span></div>
               <div>
-                <p>Bloque actual</p>
+                <p>Rango actual</p>
                 <h3>{progress?.range_start ?? start}–{progress?.range_end ?? end}</h3>
                 <span>{strongCards} automáticas · {learningCards} en progreso</span>
               </div>
@@ -1547,13 +1593,20 @@ export function TrainerApp() {
             )}
             <section className="deck-map" aria-label="Mapa de dominio de la baraja">
               {progressCards.map((card) => (
-                <span key={card.position} className={card.status} title={card.total ? `${card.accuracy}% · ${(card.average_time_ms / 1000).toFixed(1)} s` : "Sin estudiar"}>{card.position}</span>
+                <span
+                  key={card.position}
+                  className={card.status}
+                  title={card.total
+                    ? `Últimas ${card.recent_attempts?.length ?? 0}: ${card.recent_accuracy ?? 0}% · ${((card.recent_average_time_ms ?? 0) / 1000).toFixed(1)} s`
+                    : "Sin estudiar"}
+                >{card.position}</span>
               ))}
             </section>
             <div className="legend">
               <span><i className="strong" />Automática</span><span><i className="learning" />En progreso</span>
               <span><i className="weak" />Débil</span><span><i className="unseen" />Sin estudiar</span>
             </div>
+            <p className="progress-criteria">Automática: 9 de los últimos 10 intentos, los 3 últimos correctos y una media máxima de 3 s.</p>
           </div>
         )}
 

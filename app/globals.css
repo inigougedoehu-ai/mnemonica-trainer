@@ -962,6 +962,14 @@ button {
   border-radius: 0.24rem;
 }
 
+.progress-criteria {
+  margin: -0.35rem 0 1rem;
+  color: #77858d;
+  font-size: 0.7rem;
+  line-height: 1.45;
+  text-align: center;
+}
+
 .mode-progress {
   margin-bottom: 1rem;
   padding: 1rem;
@@ -1971,6 +1979,7 @@ html[data-theme="dark"] .question-count,
 html[data-theme="dark"] .trainer-header__progress > span,
 html[data-theme="dark"] .learn-position,
 html[data-theme="dark"] .duration-copy,
+html[data-theme="dark"] .progress-criteria,
 html[data-theme="dark"] .range-summary,
 html[data-theme="dark"] .unknown-answer {
   color: #94a5ad;

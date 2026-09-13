@@ -58,7 +58,7 @@ function doGet(event) {
   try {
     const params = (event && event.parameter) || {};
     if (!params.action) {
-      return respond_({ ok: true, app: "mnemonica-trainer", version: "1.2.0" }, params.callback);
+      return respond_({ ok: true, app: "mnemonica-trainer", version: "1.3.0" }, params.callback);
     }
 
     verifySecret_(params.secret);
@@ -172,7 +172,15 @@ function getProgress_(email) {
   const mine = values.filter(function (row) { return row[2] === userId && row[3] === STACK_ID; });
 
   const cards = Array.from({ length: 52 }, function (_, index) {
-    return { position: index + 1, total: 0, correct: 0, total_ms: 0, last_answered_at: "", last_answered_ms: 0 };
+    return {
+      position: index + 1,
+      total: 0,
+      correct: 0,
+      total_ms: 0,
+      last_answered_at: "",
+      last_answered_ms: 0,
+      recent_attempts: [],
+    };
   });
 
   const modeNames = ["card-position", "position-card", "previous", "next", "offset", "neighborhood", "sequence"];
@@ -189,6 +197,12 @@ function getProgress_(email) {
     card.correct += row[8] === true ? 1 : 0;
     card.total_ms += Number(row[9]) || 0;
     const answeredMs = new Date(row[4]).getTime() || 0;
+    card.recent_attempts.push({
+      correct: row[8] === true,
+      response_time_ms: Number(row[9]) || 0,
+      answered_at: answeredMs ? new Date(answeredMs).toISOString() : "",
+      answered_ms: answeredMs,
+    });
     if (answeredMs > card.last_answered_ms) {
       card.last_answered_ms = answeredMs;
       card.last_answered_at = new Date(answeredMs).toISOString();
@@ -206,21 +220,35 @@ function getProgress_(email) {
   const cardProgress = cards.map(function (card) {
     const accuracy = card.total ? card.correct / card.total : 0;
     const average = card.total ? Math.round(card.total_ms / card.total) : 0;
-    const confidence = Math.min(card.total / 5, 1);
-    const speed = average === 0 ? 0 : Math.max(0.35, Math.min(1, 3000 / average));
-    const mastery = accuracy * confidence * speed;
+    const recent = card.recent_attempts
+      .sort(function (a, b) { return a.answered_ms - b.answered_ms; })
+      .slice(-10);
+    const recentCorrect = recent.filter(function (attempt) { return attempt.correct; }).length;
+    const recentAccuracy = recent.length ? recentCorrect / recent.length : 0;
+    const recentAverage = recent.length
+      ? Math.round(recent.reduce(function (sum, attempt) { return sum + attempt.response_time_ms; }, 0) / recent.length)
+      : 0;
+    const lastThreeCorrect = recent.length >= 3 && recent.slice(-3).every(function (attempt) { return attempt.correct; });
+    const confidence = Math.min(recent.length / 10, 1);
+    const speed = recentAverage === 0 ? 0 : Math.max(0.35, Math.min(1, 3000 / recentAverage));
+    const mastery = recentAccuracy * confidence * speed;
     const ageDays = card.last_answered_at
       ? Math.max(0, (Date.now() - new Date(card.last_answered_at).getTime()) / 86400000)
       : 30;
     const priority = card.total === 0 ? 1000 : Math.round(
-      (1 - accuracy) * 700
-      + Math.min(average / 20, 220)
+      (1 - recentAccuracy) * 700
+      + Math.min(recentAverage / 20, 220)
       + Math.min(ageDays, 30) * 5
-      + Math.max(0, 5 - card.total) * 45
+      + Math.max(0, 10 - recent.length) * 25
+      + (recent.length && !recent[recent.length - 1].correct ? 180 : 0)
     );
     masteryTotal += mastery;
     let status = "unseen";
-    if (card.total > 0) status = accuracy >= 0.9 && card.total >= 5 && average <= 3000 ? "strong" : accuracy >= 0.7 ? "learning" : "weak";
+    if (card.total > 0) {
+      status = recent.length === 10 && recentCorrect >= 9 && lastThreeCorrect && recentAverage <= 3000
+        ? "strong"
+        : recentAccuracy >= 0.7 ? "learning" : "weak";
+    }
     return {
       position: card.position,
       total: card.total,
@@ -228,6 +256,15 @@ function getProgress_(email) {
       average_time_ms: average,
       last_answered_at: card.last_answered_at,
       review_priority: priority,
+      recent_accuracy: Math.round(recentAccuracy * 100),
+      recent_average_time_ms: recentAverage,
+      recent_attempts: recent.map(function (attempt) {
+        return {
+          correct: attempt.correct,
+          response_time_ms: attempt.response_time_ms,
+          answered_at: attempt.answered_at,
+        };
+      }),
       status: status,
     };
   });

@@ -30,8 +30,11 @@ test("backend returns review priority and per-mode metrics", async () => {
   const backend = await readFile(new URL("../backend/Code.gs", import.meta.url), "utf8");
   assert.match(backend, /review_priority/);
   assert.match(backend, /modes: modeProgress/);
-  assert.match(backend, /version: "1\.2\.0"/);
+  assert.match(backend, /version: "1\.3\.0"/);
   assert.match(backend, /has_session/);
+  assert.match(backend, /recent_attempts/);
+  assert.match(backend, /recentCorrect >= 9/);
+  assert.match(backend, /lastThreeCorrect/);
 });
 
 test("keeps backend credentials on the device", async () => {
@@ -39,7 +42,7 @@ test("keeps backend credentials on the device", async () => {
   assert.match(client, /localStorage\.setItem/);
   assert.match(client, /mode: "no-cors"/);
   assert.match(client, /has_session/);
-  assert.doesNotMatch(client, /d4ee9e4bdc127d739d144233f4ede2f6c305371676a54278dbc015f1bef95bcd/);
+  assert.doesNotMatch(client, /[a-f0-9]{64}/i);
 });
 
 test("supports persistent light, dark, and system themes", async () => {
