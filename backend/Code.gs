@@ -58,7 +58,7 @@ function doGet(event) {
   try {
     const params = (event && event.parameter) || {};
     if (!params.action) {
-      return respond_({ ok: true, app: "mnemonica-trainer", version: "1.3.0" }, params.callback);
+      return respond_({ ok: true, app: "mnemonica-trainer", version: "1.4.0" }, params.callback);
     }
 
     verifySecret_(params.secret);
@@ -228,8 +228,8 @@ function getProgress_(email) {
     const recentAverage = recent.length
       ? Math.round(recent.reduce(function (sum, attempt) { return sum + attempt.response_time_ms; }, 0) / recent.length)
       : 0;
-    const lastThreeCorrect = recent.length >= 3 && recent.slice(-3).every(function (attempt) { return attempt.correct; });
-    const confidence = Math.min(recent.length / 10, 1);
+    const lastFiveCorrect = recent.length >= 5 && recent.slice(-5).every(function (attempt) { return attempt.correct; });
+    const confidence = Math.min(recent.length / 5, 1);
     const speed = recentAverage === 0 ? 0 : Math.max(0.35, Math.min(1, 3000 / recentAverage));
     const mastery = recentAccuracy * confidence * speed;
     const ageDays = card.last_answered_at
@@ -239,13 +239,13 @@ function getProgress_(email) {
       (1 - recentAccuracy) * 700
       + Math.min(recentAverage / 20, 220)
       + Math.min(ageDays, 30) * 5
-      + Math.max(0, 10 - recent.length) * 25
+      + Math.max(0, 5 - recent.length) * 45
       + (recent.length && !recent[recent.length - 1].correct ? 180 : 0)
     );
     masteryTotal += mastery;
     let status = "unseen";
     if (card.total > 0) {
-      status = recent.length === 10 && recentCorrect >= 9 && lastThreeCorrect && recentAverage <= 3000
+      status = lastFiveCorrect
         ? "strong"
         : recentAccuracy >= 0.7 ? "learning" : "weak";
     }

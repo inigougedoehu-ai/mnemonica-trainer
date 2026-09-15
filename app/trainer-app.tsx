@@ -296,11 +296,8 @@ function statusFor(total: number, attempts: RecentAttempt[]): CardProgress["stat
   const recent = attempts.slice(-10);
   const correct = recent.filter((attempt) => attempt.correct).length;
   const accuracy = recent.length ? (correct / recent.length) * 100 : 0;
-  const averageTime = recent.length
-    ? recent.reduce((sum, attempt) => sum + attempt.response_time_ms, 0) / recent.length
-    : 0;
-  const lastThreeCorrect = recent.length >= 3 && recent.slice(-3).every((attempt) => attempt.correct);
-  if (recent.length === 10 && correct >= 9 && lastThreeCorrect && averageTime <= 3000) return "strong";
+  const lastFiveCorrect = recent.length >= 5 && recent.slice(-5).every((attempt) => attempt.correct);
+  if (lastFiveCorrect) return "strong";
   return accuracy >= 70 ? "learning" : "weak";
 }
 
@@ -320,7 +317,7 @@ function reviewPriority(card: CardProgress) {
     (1 - recentAccuracy) * 700
     + Math.min(recentAverage / 20, 220)
     + Math.min(ageDays, 30) * 5
-    + Math.max(0, 10 - recent.length) * 25
+    + Math.max(0, 5 - recent.length) * 45
     + (recent.length && !recent.at(-1)?.correct ? 180 : 0),
   );
 }
@@ -373,7 +370,7 @@ function applySessionLocally(current: ProgressSnapshot | null, payload: SessionP
     const recentAverage = recent.length
       ? recent.reduce((sum, attempt) => sum + attempt.response_time_ms, 0) / recent.length
       : 0;
-    const confidence = Math.min(recent.length / 10, 1);
+    const confidence = Math.min(recent.length / 5, 1);
     const speed = recentAverage ? Math.max(0.35, Math.min(1, 3000 / recentAverage)) : 0;
     return sum + recentAccuracy * confidence * speed;
   }, 0);
@@ -1573,7 +1570,7 @@ export function TrainerApp() {
               <div>
                 <p>Rango actual</p>
                 <h3>{progress?.range_start ?? start}–{progress?.range_end ?? end}</h3>
-                <span>{strongCards} automáticas · {learningCards} en progreso</span>
+                <span>{strongCards} dominadas · {learningCards} en progreso</span>
               </div>
             </section>
             {progressModes.length > 0 && (
@@ -1603,10 +1600,10 @@ export function TrainerApp() {
               ))}
             </section>
             <div className="legend">
-              <span><i className="strong" />Automática</span><span><i className="learning" />En progreso</span>
+              <span><i className="strong" />Dominada</span><span><i className="learning" />En progreso</span>
               <span><i className="weak" />Débil</span><span><i className="unseen" />Sin estudiar</span>
             </div>
-            <p className="progress-criteria">Automática: 9 de los últimos 10 intentos, los 3 últimos correctos y una media máxima de 3 s.</p>
+            <p className="progress-criteria">Dominada: las últimas 5 respuestas son correctas. La velocidad se mide por separado.</p>
           </div>
         )}
 

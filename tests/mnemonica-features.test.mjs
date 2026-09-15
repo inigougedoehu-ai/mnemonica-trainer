@@ -30,11 +30,10 @@ test("backend returns review priority and per-mode metrics", async () => {
   const backend = await readFile(new URL("../backend/Code.gs", import.meta.url), "utf8");
   assert.match(backend, /review_priority/);
   assert.match(backend, /modes: modeProgress/);
-  assert.match(backend, /version: "1\.3\.0"/);
+  assert.match(backend, /version: "1\.4\.0"/);
   assert.match(backend, /has_session/);
   assert.match(backend, /recent_attempts/);
-  assert.match(backend, /recentCorrect >= 9/);
-  assert.match(backend, /lastThreeCorrect/);
+  assert.match(backend, /lastFiveCorrect/);
 });
 
 test("keeps backend credentials on the device", async () => {
