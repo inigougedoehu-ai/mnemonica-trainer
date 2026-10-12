@@ -7,6 +7,8 @@ test("includes the requested training controls", async () => {
   for (const text of [
     "Toca para ver las opciones",
     "No la sé",
+    "Tu respuesta",
+    "Respuesta correcta",
     "Sin límite",
     "Ruta guiada",
     "Precisión y velocidad",
