@@ -1507,6 +1507,45 @@ button {
   margin-top: -0.15rem;
 }
 
+.direct-feedback-pair {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.direct-feedback-pair > div {
+  display: flex;
+  min-height: 3.75rem;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.65rem 0.85rem;
+  border: 1px solid transparent;
+  border-radius: 1rem;
+}
+
+.direct-feedback-pair svg {
+  width: 1.35rem;
+  flex: 0 0 auto;
+}
+
+.direct-feedback-pair span {
+  display: grid;
+  gap: 0.1rem;
+}
+
+.direct-feedback-pair small {
+  color: #60717a;
+  font-size: 0.68rem;
+  font-weight: 750;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.direct-feedback-pair strong {
+  color: #102c3a;
+  font-size: 1.05rem;
+}
+
+
 .direct-answer > input {
   width: 100%;
   height: 4.2rem;
