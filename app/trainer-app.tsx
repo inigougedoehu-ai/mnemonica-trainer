@@ -1088,7 +1088,7 @@ export function TrainerApp() {
       setStepIndex(0);
       setQuestionHadError(false);
       resetQuestionAnswer();
-    }, 700);
+    }, answerStyle === "direct" && !isCorrect ? 1500 : 700);
   }
 
   function dontKnow() {
@@ -1234,11 +1234,31 @@ export function TrainerApp() {
                     </Select>
                   </div>
                 )}
+                {feedback && (
+                  <div className="direct-feedback-pair" role="status" aria-live="polite">
+                    <div className={feedback === "correct" ? "answer-correct" : "answer-wrong"}>
+                      {feedback === "correct" ? <CircleCheck /> : <CircleX />}
+                      <span>
+                        <small>Tu respuesta</small>
+                        <strong>{selectedAnswer === "__unknown__" ? "No la sé" : String(selectedAnswer)}</strong>
+                      </span>
+                    </div>
+                    {feedback === "wrong" && (
+                      <div className="answer-correct">
+                        <CircleCheck />
+                        <span>
+                          <small>Respuesta correcta</small>
+                          <strong>{step.kind === "position" ? step.correctPosition : step.correctCard?.label}</strong>
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                )}
                 <Button
                   type="submit"
                   size="lg"
                   className="check-answer"
-                  disabled={step.kind === "position" ? !directNumber : !directRank || !directSuit}
+                  disabled={Boolean(feedback) || (step.kind === "position" ? !directNumber : !directRank || !directSuit)}
                 >
                   Comprobar
                 </Button>
