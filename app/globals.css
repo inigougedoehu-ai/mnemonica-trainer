@@ -2170,6 +2170,14 @@ html[data-theme="dark"] .choice-reveal__cover {
   color: #e7eef1;
 }
 
+html[data-theme="dark"] .direct-feedback-pair small {
+  color: #94a5ad;
+}
+
+html[data-theme="dark"] .direct-feedback-pair strong {
+  color: #e7eef1;
+}
+
 html[data-theme="dark"] .answer-correct {
   border-color: #3d9c78 !important;
   background: #123629 !important;
